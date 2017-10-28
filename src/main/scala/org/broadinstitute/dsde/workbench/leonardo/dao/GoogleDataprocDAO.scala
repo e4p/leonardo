@@ -153,7 +153,17 @@ class GoogleDataprocDAO(protected val dataprocConfig: DataprocConfig, protected 
       .setConfig(clusterConfig)
 
     // Create a dataproc create request and give it the google project, a zone, and the Cluster
-    val request = dataproc.projects().regions().clusters().create(googleProject.string, dataprocConfig.dataprocDefaultRegion, cluster)
+    val cred = new GoogleCredential.Builder()
+      .setTransport(httpTransport)
+      .setJsonFactory(jsonFactory)
+      .setServiceAccountId(dataprocConfig.serviceAccount.string)
+      .setServiceAccountScopes(cloudPlatformScopes.asJava)
+      .setServiceAccountPrivateKeyFromPemFile(serviceAccountPemFile)
+      .setServiceAccountUser(serviceAccount.value)
+      .build()
+    val dp = new Dataproc.Builder(httpTransport, jsonFactory, cred)
+      .setApplicationName(dataprocConfig.applicationName).build()
+    val request = dp.projects().regions().clusters().create(googleProject.string, dataprocConfig.dataprocDefaultRegion, cluster)
 
     executeGoogleRequestAsync(googleProject, clusterName.toString, request)  // returns a Future[DataprocOperation]
   }
