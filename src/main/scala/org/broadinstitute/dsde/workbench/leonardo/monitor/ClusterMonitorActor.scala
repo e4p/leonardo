@@ -118,7 +118,9 @@ class ClusterMonitorActor(val cluster: Cluster,
     val bucketPathFuture = dbRef.inTransaction { dataAccess =>
       dataAccess.clusterQuery.getInitBucket(cluster.googleProject, cluster.clusterName)
     }
+    val deleteBucketFuture = bucketPathFuture
 
+    /*
     // Then delete it
     val deleteBucketFuture = bucketPathFuture flatMap {
       case None => Future.successful( logger.warn(s"Could not lookup bucket for cluster ${cluster.googleProject}/${cluster.clusterName}: cluster not in db") )
@@ -127,6 +129,7 @@ class ClusterMonitorActor(val cluster: Cluster,
           logger.debug(s"Deleted init bucket $bucketPath for cluster ${cluster.googleProject}/${cluster.clusterName}")
         }
     }
+    */
 
     // Then remove the Dataproc Worker IAM role for the pet service account
     val iamFuture = deleteBucketFuture flatMap { _ =>
