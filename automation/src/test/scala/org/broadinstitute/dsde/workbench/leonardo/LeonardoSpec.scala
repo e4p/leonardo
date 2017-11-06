@@ -202,8 +202,22 @@ class LeonardoSpec extends FreeSpec with Matchers with Eventually with WebBrowse
         }
       }
 
+
+
+
       // move the file to a unique location so it won't interfere with other tests
       val uniqueDownFile = ResourceFile.downloadsFile(s"import-hail-${Instant.now().toString}.ipynb")
+
+      println(s"Debug: downloads dir = $downloadsDestination")
+      println(s"Debug: downFile = ${downFile.getAbsolutePath}")
+      println(s"Debug: uniqueDownFile = ${uniqueDownFile.getAbsolutePath}")
+
+
+
+
+
+
+
       moveFile(downFile, uniqueDownFile)
       uniqueDownFile.deleteOnExit()
 
