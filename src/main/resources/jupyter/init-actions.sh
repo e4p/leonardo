@@ -18,8 +18,7 @@ if [ ! -z ${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS} ] ; then
   # This overrides the credentials on the metadata server.
   # This needs to happen on master and worker nodes.
   export GOOGLE_APPLICATION_CREDENTIALS=/etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}
-  echo "export GOOGLE_APPLICATION_CREDENTIALS=/etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}" >> ~/.bashrc
-
+  echo "export GOOGLE_APPLICATION_CREDENTIALS=/etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}" | tee -a /etc/profile.d/spark_config.sh /etc/*bashrc /usr/lib/spark/conf/spark-env.sh
 else
   echo "" > /etc/empty
   export JUPYTER_SERVICE_ACCOUNT_CREDENTIALS=empty
