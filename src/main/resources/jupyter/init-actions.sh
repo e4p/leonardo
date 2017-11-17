@@ -18,6 +18,8 @@ if [ ! -z ${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS} ] ; then
   # This overrides the credentials on the metadata server.
   # This needs to happen on master and worker nodes.
   export GOOGLE_APPLICATION_CREDENTIALS=/etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}
+  echo "export GOOGLE_APPLICATION_CREDENTIALS=/etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}" >> ~/.bashrc
+
 else
   echo "" > /etc/empty
   export JUPYTER_SERVICE_ACCOUNT_CREDENTIALS=empty
