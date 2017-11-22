@@ -88,4 +88,6 @@ if [[ "${ROLE}" == 'Master' ]]; then
     if [ ! -z ${JUPYTER_EXTENSION_URI} ] ; then
       docker exec -d ${JUPYTER_SERVER_NAME} /etc/install-jupyter-extension.sh /etc/${JUPYTER_EXTENSION_ARCHIVE}
     fi
+
+    echo "spark.executor.instances 20" >> /spark/spark-2.0.2/conf/spark-defaults.conf
 fi
