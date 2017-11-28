@@ -12,6 +12,7 @@ import net.ceedubs.ficus.Ficus._
 import org.broadinstitute.dsde.workbench.leonardo.{CommonTestData, GcsPathUtils, VCMockitoMatchers}
 import org.broadinstitute.dsde.workbench.google.gcs.{GcsBucketName, GcsPath}
 import org.broadinstitute.dsde.workbench.google.mock.MockGoogleIamDAO
+import org.broadinstitute.dsde.workbench.leonardo.auth.WhitelistAuthProvider
 import org.broadinstitute.dsde.workbench.leonardo.config.{ClusterFilesConfig, ClusterResourcesConfig, DataprocConfig, ProxyConfig, SwaggerConfig}
 import org.broadinstitute.dsde.workbench.leonardo.dao.{DataprocDAO, MockSamDAO}
 import org.broadinstitute.dsde.workbench.leonardo.db.{DbSingleton, TestComponent}
@@ -78,7 +79,7 @@ class ClusterMonitorSpec extends TestKit(ActorSystem("leonardotest")) with FlatS
 
   def createClusterSupervisor(dao: DataprocDAO): ActorRef = {
     val actor = system.actorOf(TestClusterSupervisorActor.props(dataprocConfig, dao, new MockGoogleIamDAO, DbSingleton.ref, testKit))
-    new LeonardoService(dataprocConfig, clusterFilesConfig, clusterResourcesConfig, proxyConfig, swaggerConfig, dao, new MockGoogleIamDAO, DbSingleton.ref, actor, new MockSamDAO)
+    new LeonardoService(dataprocConfig, clusterFilesConfig, clusterResourcesConfig, proxyConfig, swaggerConfig, dao, new MockGoogleIamDAO, DbSingleton.ref, actor, new MockSamDAO, new WhitelistAuthProvider(config.atPath("auth.providerConfig")))
     actor
   }
 
