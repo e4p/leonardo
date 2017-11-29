@@ -34,7 +34,7 @@ class LeonardoSpec extends FreeSpec with Matchers with Eventually with WebBrowse
   val project = GoogleProject(LeonardoConfig.Projects.default)
   val sa = GoogleServiceAccount(LeonardoConfig.Leonardo.notebooksServiceAccountEmail)
   val bucket = GcsBucketName("mah-bukkit")
-
+  val incorrectJupyterExtensionUri = "gs://leonardo-swat-test-bucket-do-not-delete"
   // ------------------------------------------------------
 
   def labelCheck(seen: LabelMap,
@@ -49,7 +49,8 @@ class LeonardoSpec extends FreeSpec with Matchers with Eventually with WebBrowse
     val dummyPetSa = WorkbenchUserServiceAccountEmail("dummy")
     val expected = requestedLabels ++ DefaultLabels(clusterName, googleProject, gcsBucketName, dummyPetSa, None).toMap - "serviceAccount"
 
-    (seen - "serviceAccount") shouldBe (expected - "serviceAccount")
+    (seen - "serviceAccount" - "notebookExtension") shouldBe (expected - "serviceAccount" - "notebookExtension")
+
   }
 
   def clusterCheck(cluster: Cluster,
@@ -67,7 +68,7 @@ class LeonardoSpec extends FreeSpec with Matchers with Eventually with WebBrowse
   }
 
   // creates a cluster and checks to see that it reaches the Running state
-  def createAndMonitor(googleProject: GoogleProject, clusterName: ClusterName, clusterRequest: ClusterRequest): Cluster = {
+  def createAndMonitor(googleProject: GoogleProject, clusterName: ClusterName, clusterRequest: ClusterRequest, clusterStatus:ClusterStatus = ClusterStatus.Running): Cluster = {
     val cluster = Leonardo.cluster.create(googleProject, clusterName, clusterRequest)
     clusterCheck(cluster, clusterRequest.labels, clusterName, Seq(ClusterStatus.Creating))
 
@@ -75,13 +76,13 @@ class LeonardoSpec extends FreeSpec with Matchers with Eventually with WebBrowse
     clusterCheck(Leonardo.cluster.get(googleProject, clusterName), clusterRequest.labels, clusterName, Seq(ClusterStatus.Creating))
 
     // wait for "Running" or error (fail fast)
-    val runningCluster = eventually {
+    val actualCluster = eventually {
       clusterCheck(Leonardo.cluster.get(googleProject, clusterName), clusterRequest.labels, clusterName, Seq(ClusterStatus.Running, ClusterStatus.Error))
     } (PatienceConfig(timeout = scaled(Span(8, Minutes)), interval = scaled(Span(20, Seconds))))
 
-    // now check that it didn't timeout or error
-    runningCluster.status shouldBe ClusterStatus.Running
-    runningCluster
+    // now check the cluster is in expected status
+    actualCluster.status shouldBe clusterStatus
+    actualCluster
   }
 
   // deletes a cluster and checks to see that it reaches the Deleted state
@@ -121,7 +122,7 @@ class LeonardoSpec extends FreeSpec with Matchers with Eventually with WebBrowse
     val request = ClusterRequest(bucket, Map("foo" -> Random.alphanumeric.take(10).mkString))
 
     val testResult: Try[T] = Try {
-      val cluster = createAndMonitor(googleProject, name, request)
+      val cluster = createAndMonitor(googleProject, name, request, ClusterStatus.Running)
       testCode(cluster)
     }
 
@@ -130,6 +131,19 @@ class LeonardoSpec extends FreeSpec with Matchers with Eventually with WebBrowse
     testResult.get
   }
 
+
+  def withNewErroredCluster[T](googleProject: GoogleProject)(testCode: Cluster => T): T = {
+    val name = ClusterName(s"automation-test-a${Random.alphanumeric.take(10).mkString.toLowerCase}z")
+    val request = ClusterRequest(bucket, Map("foo" -> Random.alphanumeric.take(10).mkString), Some(incorrectJupyterExtensionUri))
+    val testResult: Try[T] = Try {
+      val cluster = createAndMonitor(googleProject, name, request, ClusterStatus.Error)
+      testCode(cluster)
+    }
+
+    // delete before checking testCode status, which may throw
+    deleteAndMonitor(googleProject, name)
+    testResult.get
+  }
   // create a new cluster and wait sufficient time for the jupyter server to be ready
   
   def withReadyCluster[T](googleProject: GoogleProject)(testCode: Cluster => T): T = {
@@ -170,6 +184,11 @@ class LeonardoSpec extends FreeSpec with Matchers with Eventually with WebBrowse
       }
     }
 
+    "should error on cluster create and delete the cluster" in {
+      withNewErroredCluster(project) { _ =>
+        // no-op; just verify that it launches
+      }
+    }
     "should open the notebooks list page" in withWebDriver { implicit driver =>
       withReadyCluster(project) { cluster =>
         withNotebooksListPage(cluster) { _ =>

@@ -41,22 +41,26 @@ object Leonardo extends WorkbenchClient with LazyLogging {
                                     createdDate: String,
                                     destroyedDate: Option[String],
                                     labels: LabelMap,
-                                    jupyterExtensionUri: Option[GcsPath]) {
+                                    jupyterExtensionUri: Option[String]) {
 
-      def toCluster = Cluster(clusterName,
-        googleId,
-        googleProject,
-        googleServiceAccount,
-        googleBucket,
-        MachineConfig(machineConfig),
-        clusterUrl,
-        operationName,
-        ClusterStatus.withName(status),
-        hostIp,
-        Instant.parse(createdDate),
-        destroyedDate map Instant.parse,
-        labels,
-        jupyterExtensionUri)
+      def toCluster = {
+        val jupyterUri:Option[GcsPath] = jupyterExtensionUri map (GcsPath.parse(_).right.get)
+
+        Cluster(clusterName,
+          googleId,
+          googleProject,
+          googleServiceAccount,
+          googleBucket,
+          MachineConfig(machineConfig),
+          clusterUrl,
+          operationName,
+          ClusterStatus.withName(status),
+          hostIp,
+          Instant.parse(createdDate),
+          destroyedDate map Instant.parse,
+          labels,
+          jupyterUri)
+      }
     }
 
     def handleClusterResponse(response: String): Cluster = mapper.readValue(response, classOf[ClusterKluge]).toCluster
@@ -70,10 +74,6 @@ object Leonardo extends WorkbenchClient with LazyLogging {
         mapper.readValue(clusterAsJson, classOf[ClusterKluge]).toCluster
       }
     }
-
-
-
-
 
     def clusterPath(googleProject: GoogleProject, clusterName: ClusterName): String =
       s"api/cluster/${googleProject.string}/${clusterName.string}"

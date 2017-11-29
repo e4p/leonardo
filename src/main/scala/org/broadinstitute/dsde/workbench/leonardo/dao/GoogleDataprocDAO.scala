@@ -135,7 +135,7 @@ class GoogleDataprocDAO(protected val dataprocConfig: DataprocConfig,
   override def createCluster(googleProject: GoogleProject, clusterName: ClusterName, clusterRequest: ClusterRequest, bucketName: GcsBucketName, serviceAccount: WorkbenchUserServiceAccountEmail)(implicit executionContext: ExecutionContext): Future[LeoCluster] = {
     buildCluster(googleProject, clusterName, clusterRequest, bucketName, clusterDefaultsConfig, serviceAccount).map { operation =>
       //Make a Leo cluster from the Google operation details
-      LeoCluster.create(clusterRequest, clusterName, googleProject, getOperationUUID(operation), OperationName(operation.getName), serviceAccount, clusterDefaultsConfig)
+      LeoCluster.create(clusterRequest, clusterName, googleProject, getOperationUUID(operation), OperationName(operation.getName), serviceAccount, clusterDefaultsConfig, LeoClusterStatus.Creating)
     }
   }
 
@@ -349,6 +349,7 @@ class GoogleDataprocDAO(protected val dataprocConfig: DataprocConfig,
     val request = dataproc.projects().regions().clusters().delete(googleProject.string, dataprocConfig.dataprocDefaultRegion, clusterName.string)
     executeGoogleRequestAsync(googleProject, clusterName.toString, request).recover {
       // treat a 404 error as a successful deletion
+      case CallToGoogleApiFailedException(_, _, 404, _) => ()
       case CallToGoogleApiFailedException(_, _, 404, _) => ()
     }.void
   }
