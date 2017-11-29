@@ -81,7 +81,7 @@ class ClusterMonitorSpec extends TestKit(ActorSystem("leonardotest")) with FlatS
 
   def createClusterSupervisor(dao: DataprocDAO): ActorRef = {
     val actor = system.actorOf(TestClusterSupervisorActor.props(dataprocConfig, dao, new MockGoogleIamDAO, DbSingleton.ref, testKit))
-    new LeonardoService(dataprocConfig, clusterFilesConfig, clusterResourcesConfig, proxyConfig, swaggerConfig, dao, new MockGoogleIamDAO, DbSingleton.ref, actor, new MockSamDAO, new WhitelistAuthProvider(config.atPath("auth.providerConfig")))
+    new LeonardoService(dataprocConfig, clusterFilesConfig, clusterResourcesConfig, proxyConfig, swaggerConfig, dao, new MockGoogleIamDAO, DbSingleton.ref, actor, new MockSamDAO, new WhitelistAuthProvider(config.getConfig("auth.providerConfig")))
     actor
   }
 
