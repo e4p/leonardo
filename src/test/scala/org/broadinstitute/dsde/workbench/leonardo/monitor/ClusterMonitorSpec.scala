@@ -51,6 +51,7 @@ class ClusterMonitorSpec extends TestKit(ActorSystem("leonardotest")) with FlatS
     operationName = OperationName("op1"),
     status = ClusterStatus.Creating,
     hostIp = None,
+    creator = userEmail,
     createdDate = Instant.now(),
     destroyedDate = None,
     labels = Map("bam" -> "yes", "vcf" -> "no"),
@@ -67,6 +68,7 @@ class ClusterMonitorSpec extends TestKit(ActorSystem("leonardotest")) with FlatS
     operationName = OperationName("op1"),
     status = ClusterStatus.Deleting,
     hostIp = None,
+    creator = userEmail,
     createdDate = Instant.now(),
     destroyedDate = None,
     labels = Map("bam" -> "yes", "vcf" -> "no"),
@@ -297,7 +299,7 @@ class ClusterMonitorSpec extends TestKit(ActorSystem("leonardotest")) with FlatS
 
     val newClusterId = UUID.randomUUID()
     when {
-      dao.createCluster(mockitoEq(creatingCluster.googleProject), vcEq(creatingCluster.clusterName), any[ClusterRequest], vcAny[GcsBucketName], any[WorkbenchEmail])(any[ExecutionContext])
+      dao.createCluster(vcEq(creatingCluster.creator), mockitoEq(creatingCluster.googleProject), vcEq(creatingCluster.clusterName), any[ClusterRequest], vcAny[GcsBucketName], any[WorkbenchEmail])(any[ExecutionContext])
     } thenReturn Future.successful {
       creatingCluster.copy(googleId=newClusterId)
     }
