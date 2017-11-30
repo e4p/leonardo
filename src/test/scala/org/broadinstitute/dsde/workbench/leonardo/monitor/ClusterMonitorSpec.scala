@@ -33,13 +33,6 @@ import scala.concurrent.{ExecutionContext, Future}
   * Created by rtitle on 9/6/17.
   */
 class ClusterMonitorSpec extends TestKit(ActorSystem("leonardotest")) with FlatSpecLike with Matchers with MockitoSugar with BeforeAndAfterAll with TestComponent with VCMockitoMatchers with CommonTestData with GcsPathUtils { testKit =>
-  val config = ConfigFactory.parseResources("reference.conf").withFallback(ConfigFactory.load())
-  val dataprocConfig = config.as[DataprocConfig]("dataproc")
-  val clusterFilesConfig = config.as[ClusterFilesConfig]("clusterFiles")
-  val clusterResourcesConfig = config.as[ClusterResourcesConfig]("clusterResources")
-  val proxyConfig = config.as[ProxyConfig]("proxy")
-  val swaggerConfig = config.as[SwaggerConfig]("swagger")
-
   val creatingCluster = Cluster(
     clusterName = name1,
     googleId = UUID.randomUUID(),
