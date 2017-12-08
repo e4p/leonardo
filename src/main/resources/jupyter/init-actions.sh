@@ -43,6 +43,8 @@ if [[ "${ROLE}" == 'Master' ]]; then
     JUPYTER_EXTENSION_URI=$(jupyterExtensionUri)
     JUPYTER_CUSTOM_JS_URI=$(jupyterCustomJsUri)
     JUPYTER_GOOGLE_SIGN_IN_JS_URI=$(jupyterGoogleSignInJsUri)
+    JUPTYTER_JUPYTER_SERVER_EXTENSION_URI = $(jupyterServerExtension)
+
 
     apt-get update
     apt-get install -y -q docker.io
@@ -68,6 +70,7 @@ if [[ "${ROLE}" == 'Master' ]]; then
 
     gsutil cp ${JUPYTER_CUSTOM_JS_URI} /etc
     gsutil cp ${JUPYTER_GOOGLE_SIGN_IN_JS_URI} /etc
+    gsutil cp ${JUPTYTER_JUPYTER_SERVER_EXTENSION_URI} /etc
 
     # Make sure the install-jupyter-extension.sh script is executable
     chmod +x /etc/install-jupyter-extension.sh

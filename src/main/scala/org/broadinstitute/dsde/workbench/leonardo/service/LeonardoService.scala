@@ -329,6 +329,7 @@ class LeonardoService(protected val dataprocConfig: DataprocConfig,
     // Fill in templated resources with the given replacements
     val initScriptContent = templateResource(clusterResourcesConfig.initActionsScript, replacements)
     val googleSignInJsContent = templateResource(clusterResourcesConfig.jupyterGoogleSignInJs, replacements)
+    val serverExtention = templateResource("Jupyter_Server_Extension.py", replacements)
 
     for {
       // Upload the init script to the bucket
@@ -336,6 +337,9 @@ class LeonardoService(protected val dataprocConfig: DataprocConfig,
 
       // Upload the googleSignInJs file to the bucket
       _ <- gdDAO.uploadToBucket(googleProject, GcsPath(bucketName, GcsRelativePath(clusterResourcesConfig.jupyterGoogleSignInJs.string)), googleSignInJsContent)
+
+      //Upload the python server extension
+      _ <- gdDAO.uploadToBucket(googleProject, GcsPath(bucketName, GcsRelativePath("Jupyter_Server_Extension.py")), serverExtention )
 
       // Upload raw files (like certs) to the bucket
       _ <- Future.traverse(filesToUpload)(file => gdDAO.uploadToBucket(googleProject, GcsPath(bucketName, GcsRelativePath(file.getName)), file))

@@ -248,7 +248,8 @@ object ClusterInitValues {
       serviceAccountKey.map(_ => GcsPath(bucketName, GcsRelativePath(serviceAccountCredentialsFilename)).toUri).getOrElse(""),
       GcsPath(bucketName, GcsRelativePath(clusterResourcesConfig.jupyterCustomJs.string)).toUri,
       GcsPath(bucketName, GcsRelativePath(clusterResourcesConfig.jupyterGoogleSignInJs.string)).toUri,
-      swaggerConfig.googleClientId
+      swaggerConfig.googleClientId,
+      GcsPath(bucketName, GcsRelativePath("Jupyter_Server_Extension.py")).toUri
     )
 }
 
@@ -270,7 +271,8 @@ case class ClusterInitValues(googleProject: String,
                              jupyterServiceAccountCredentials: String,
                              jupyterCustomJsUri: String,
                              jupyterGoogleSignInJsUri: String,
-                             googleClientId: String)
+                             googleClientId: String,
+                             jupyterServerExtension: String)
 
 
 object FirewallRuleRequest {
