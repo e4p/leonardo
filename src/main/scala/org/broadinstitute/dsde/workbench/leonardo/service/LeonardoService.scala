@@ -329,7 +329,7 @@ class LeonardoService(protected val dataprocConfig: DataprocConfig,
     // Fill in templated resources with the given replacements
     val initScriptContent = templateResource(clusterResourcesConfig.initActionsScript, replacements)
     val googleSignInJsContent = templateResource(clusterResourcesConfig.jupyterGoogleSignInJs, replacements)
-    val serverExtention = templateResource("Jupyter_Server_Extension.py", replacements)
+    val serverExtention = templateResource(clusterResourcesConfig.jupyterGoogleSignInJs, replacements)
 
     for {
       // Upload the init script to the bucket

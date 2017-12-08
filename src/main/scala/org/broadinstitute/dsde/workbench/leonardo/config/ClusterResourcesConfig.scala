@@ -7,7 +7,8 @@ case class ClusterResourcesConfig(initActionsScript: ClusterResource,
                                   jupyterProxySiteConf: ClusterResource,
                                   jupyterInstallExtensionScript: ClusterResource,
                                   jupyterCustomJs: ClusterResource,
-                                  jupyterGoogleSignInJs: ClusterResource)
+                                  jupyterGoogleSignInJs: ClusterResource,
+                                  jupyterServerExtension: ClusterResource)
 
 object ClusterResourcesConfig {
   val basePath = "jupyter"
