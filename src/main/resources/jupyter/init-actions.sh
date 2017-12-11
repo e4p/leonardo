@@ -43,7 +43,7 @@ if [[ "${ROLE}" == 'Master' ]]; then
     JUPYTER_EXTENSION_URI=$(jupyterExtensionUri)
     JUPYTER_CUSTOM_JS_URI=$(jupyterCustomJsUri)
     JUPYTER_GOOGLE_SIGN_IN_JS_URI=$(jupyterGoogleSignInJsUri)
-    JUPTYTER_JUPYTER_SERVER_EXTENSION_URI = $(jupyterServerExtension)
+    JUPYTER_JUPYTER_SERVER_EXTENSION_URI = $(jupyterServerExtension)
 
 
     apt-get update
