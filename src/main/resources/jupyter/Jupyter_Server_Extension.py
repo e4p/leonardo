@@ -12,6 +12,7 @@ def load_jupyter_server_extension(nb_server_app):
     Args:
         nb_server_app (NotebookWebApplication): handle to the Notebook webserver instance.
     """
+    nbapp.log.info('Leo jupyter server extension loaded')
     web_app = nb_server_app.web_app
     host_pattern = '.*$'
     route_pattern = url_path_join(web_app.settings['base_url'], '/hello')
