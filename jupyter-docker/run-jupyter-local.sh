@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_IMG=jupyter/minimal-notebook
+DOCKER_IMG=551baa9d1b6d
 CONTAINER=jupyter-server
 
 start () {
@@ -12,8 +12,9 @@ start () {
     fi
 
     echo "Starting Jupyter server container..."
-    docker create -it --name ${CONTAINER} --rm -p 8001:8001 $DOCKER_IMG
+    docker create -e PYTHONPATH=/etc/jupyter -it --name ${CONTAINER} --rm -p 8001:8001 -p 8002:8002 $DOCKER_IMG
     docker cp jupyter-docker/jupyter_notebook_config.py ${CONTAINER}:/etc/jupyter/jupyter_notebook_config.py
+    docker cp /Users/vkumra/Documents/firecloud/leonardo/src/main/resources/jupyter/Jupyter_Server_Extension.py ${CONTAINER}:/etc/jupyter/Jupyter_Server_Extension.py
     docker start ${CONTAINER}
 
     sleep 5

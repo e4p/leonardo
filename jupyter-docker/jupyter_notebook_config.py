@@ -5,10 +5,11 @@ import subprocess
 import os
 import errno
 import stat
+import Jupyter_Server_Extension
 
 c = get_config()
 c.NotebookApp.ip = '*'
-c.NotebookApp.port = 8000
+c.NotebookApp.port = 8001
 c.NotebookApp.open_browser = False
 c.NotebookApp.token = ''
 c.NotebookApp.allow_origin = '*'
@@ -18,5 +19,5 @@ c.NotebookApp.base_url = '/notebooks/' + fragment + '/'
 c.NotebookApp.webapp_settings = {'static_url_prefix':'/notebooks/' + fragment + '/static/'}
 
 c.NotebookApp.nbserver_extensions = {
-    'Jupyter_Server_Extension': True
+    'Jupyter_Server_Extension': True,
 }

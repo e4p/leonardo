@@ -112,6 +112,7 @@ ADD spark-defaults.conf.template $SPARK_HOME/conf/
 # Spark defaults conf find and replace [HAILHASH] with the hash
 RUN sed "s|\[HAILHASH\]|$HAILHASH|g" $SPARK_HOME/conf/spark-defaults.conf.template > $SPARK_HOME/conf/spark-defaults.conf
 ADD jupyter_notebook_config.py $JUPYTER_HOME
+ADD Jupyter_Server_Extension.py $JUPYTER_HOME/custom/
 RUN chown -R $USER:users $JUPYTER_HOME
 
 USER $USER
