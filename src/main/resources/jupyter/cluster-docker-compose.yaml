@@ -24,7 +24,7 @@ jupyter:
     - /etc/install-jupyter-extension.sh:/etc/install-jupyter-extension.sh
     - /etc/${JUPYTER_EXTENSION_ARCHIVE}:/etc/${JUPYTER_EXTENSION_ARCHIVE}
     - /etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}:/etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}
-    - /etc/custom.js:/home/jupyter-user/.jupyter/custom/custom.js0
+    - /etc/custom.js:/home/jupyter-user/.jupyter/custom/custom.js
     - /etc/google_sign_in.js:/home/jupyter-user/.jupyter/custom/google_sign_in.js
     - /etc/Jupyter_Server_Extension.py:/home/jupyter-user/.jupyter/custom/Jupyter_Server_Extension.py
   restart: always
