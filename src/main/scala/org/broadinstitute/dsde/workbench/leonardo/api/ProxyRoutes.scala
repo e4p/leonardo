@@ -20,6 +20,30 @@ trait ProxyRoutes extends UserInfoDirectives{ self: LazyLogging =>
   protected val tokenCookieName = "FCtoken"
 
   protected val proxyRoutes: Route =
+    pathPrefix("notebooks" / Segment / Segment / "api/localize") { (googleProject, clusterName) =>
+      extractRequest { request =>
+        cookie(tokenCookieName) { tokenCookie => // rejected with MissingCookieRejection if the cookie is not present
+          complete {
+            proxyService.getCachedUserInfoFromToken(tokenCookie.value).flatMap { userInfo =>
+              // Proxy logic handled by the ProxyService class
+              proxyService.proxyWithSync(userInfo, GoogleProject(googleProject), ClusterName(clusterName), request, tokenCookie)
+            }
+          }
+        }
+      }
+    } ~
+      pathPrefix("notebooks" / Segment / Segment / "api/delocalize") { (googleProject, clusterName) =>
+        extractRequest { request =>
+          cookie(tokenCookieName) { tokenCookie => // rejected with MissingCookieRejection if the cookie is not present
+            complete {
+              proxyService.getCachedUserInfoFromToken(tokenCookie.value).flatMap { userInfo =>
+                // Proxy logic handled by the ProxyService class
+                proxyService.proxyWithSync(userInfo, GoogleProject(googleProject), ClusterName(clusterName), request, tokenCookie)
+              }
+            }
+          }
+        }
+      } ~
     pathPrefix("notebooks" / Segment / Segment) { (googleProject, clusterName) =>
       extractRequest { request =>
         cookie(tokenCookieName) { tokenCookie => // rejected with MissingCookieRejection if the cookie is not present

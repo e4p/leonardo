@@ -65,6 +65,42 @@ class ProxyService(proxyConfig: ProxyConfig,
           throw AccessTokenExpiredException() }
   }
 
+  def proxyAllowSync(userInfo: UserInfo, googleProject: GoogleProject, clusterName: ClusterName, request: HttpRequest, token: HttpCookiePair): Future[HttpResponse] = {
+    //check auth to see it
+    val authCheck = for {
+      hasViewPermission <- authProvider.hasNotebookClusterPermission(userInfo, GetClusterStatus, googleProject.value, clusterName.string)
+      hasSyncPermission <- authProvider.hasNotebookClusterPermission(userInfo, SyncDataToCluster, googleProject.valuem, clusterName.string)
+    } yield {
+      if (!hasViewPermission) {
+        throw ClusterNotFoundException(googleProject, clusterName)
+      } else if (!hasSyncPermission) {
+        throw AuthorizationError(userInfo.userEmail)
+      } else {
+        ()
+      }
+    }
+
+    logger.debug(s"Received proxy request with user token ${token.value}")
+    authCheck flatMap { _ => getTargetHost(googleProject, clusterName) } flatMap {
+      case ClusterReady(targetHost) =>
+        // If this is a WebSocket request (e.g. wss://leo:8080/...) then akka-http injects a
+        // virtual UpgradeToWebSocket header which contains facilities to handle the WebSocket data.
+        // The presence of this header distinguishes WebSocket from http requests.
+        val responseFuture = request.header[UpgradeToWebSocket] match {
+          case Some(upgrade) => handleWebSocketRequest(targetHost, request, upgrade)
+          case None => handleHttpRequest(targetHost, request)
+        }
+        responseFuture recover { case e =>
+          logger.error("Error occurred in Jupyter proxy", e)
+          throw ProxyException(googleProject, clusterName)
+        }
+      case ClusterNotReady =>
+        throw ClusterNotReadyException(googleProject, clusterName)
+      case ClusterNotFound =>
+        throw ClusterNotFoundException(googleProject, clusterName)
+    }
+  }
+
   /**
     * Entry point to this class. Given a google project, cluster name, and HTTP request,
     * looks up the notebook server IP and proxies the HTTP request to the notebook server.
