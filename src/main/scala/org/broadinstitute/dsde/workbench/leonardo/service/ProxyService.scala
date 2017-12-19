@@ -69,7 +69,7 @@ class ProxyService(proxyConfig: ProxyConfig,
     //check auth to see it
     val authCheck = for {
       hasViewPermission <- authProvider.hasNotebookClusterPermission(userInfo, GetClusterStatus, googleProject.value, clusterName.string)
-      hasSyncPermission <- authProvider.hasNotebookClusterPermission(userInfo, SyncDataToCluster, googleProject.valuem, clusterName.string)
+      hasSyncPermission <- authProvider.hasNotebookClusterPermission(userInfo, SyncDataToCluster, googleProject.value, clusterName.string)
     } yield {
       if (!hasViewPermission) {
         throw ClusterNotFoundException(googleProject, clusterName)
