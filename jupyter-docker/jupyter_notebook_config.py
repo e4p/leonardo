@@ -9,7 +9,7 @@ import Jupyter_Server_Extension
 
 c = get_config()
 c.NotebookApp.ip = '*'
-c.NotebookApp.port = 8000
+c.NotebookApp.port = 8001
 c.NotebookApp.open_browser = False
 c.NotebookApp.token = ''
 c.NotebookApp.allow_origin = '*'

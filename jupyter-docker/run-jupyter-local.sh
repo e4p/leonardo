@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_IMG=551baa9d1b6d
+DOCKER_IMG=d85f73932e1e
 CONTAINER=jupyter-server
 
 start () {
