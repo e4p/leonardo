@@ -6,7 +6,6 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri.Host
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.HttpCookiePair
 import akka.http.scaladsl.model.ws._
 import akka.pattern.ask
 import akka.stream.ActorMaterializer
@@ -16,15 +15,13 @@ import com.google.common.cache.{CacheBuilder, CacheLoader}
 import com.typesafe.scalalogging.LazyLogging
 import java.util.concurrent.TimeUnit
 
-import cats.data.OptionT
-import cats.implicits._
 import org.broadinstitute.dsde.workbench.leonardo.config.ProxyConfig
 import org.broadinstitute.dsde.workbench.leonardo.dao.DataprocDAO
 import org.broadinstitute.dsde.workbench.leonardo.db.DbReference
 import org.broadinstitute.dsde.workbench.leonardo.dns.ClusterDnsCache._
 import org.broadinstitute.dsde.workbench.leonardo.model._
 import org.broadinstitute.dsde.workbench.leonardo.model.NotebookClusterActions._
-import org.broadinstitute.dsde.workbench.model.{UserInfo, WorkbenchEmail}
+import org.broadinstitute.dsde.workbench.model.UserInfo
 import org.broadinstitute.dsde.workbench.model.google.GoogleProject
 
 import scala.collection.immutable
@@ -62,7 +59,8 @@ class ProxyService(proxyConfig: ProxyConfig,
         if (expireTime.isAfter(Instant.now))
           userInfo.copy(tokenExpiresIn = expireTime.toEpochMilli - Instant.now.toEpochMilli)
         else
-          throw AccessTokenExpiredException() }
+          throw AccessTokenExpiredException()
+    }
   }
 
   /**
@@ -73,11 +71,10 @@ class ProxyService(proxyConfig: ProxyConfig,
     * @param googleProject the Google project
     * @param clusterName the cluster name
     * @param request the HTTP request to proxy
-    * @param token the user access token
     * @return HttpResponse future representing the proxied response, or NotFound if a notebook
     *         server IP could not be found.
     */
-  def proxy(userInfo: UserInfo, googleProject: GoogleProject, clusterName: ClusterName, request: HttpRequest, token: HttpCookiePair): Future[HttpResponse] = {
+  def proxy(userInfo: UserInfo, googleProject: GoogleProject, clusterName: ClusterName, request: HttpRequest): Future[HttpResponse] = {
     //check auth to see it
     val authCheck = for {
       hasViewPermission <- authProvider.hasNotebookClusterPermission(userInfo, GetClusterStatus, googleProject.value, clusterName.string)
@@ -86,13 +83,13 @@ class ProxyService(proxyConfig: ProxyConfig,
       if (!hasViewPermission) {
         throw ClusterNotFoundException(googleProject, clusterName)
       } else if (!hasConnectPermission) {
-        throw AuthorizationError(userInfo.userEmail)
+        throw AuthorizationError(Option(userInfo.userEmail))
       } else {
         ()
       }
     }
 
-    logger.debug(s"Received proxy request with user token ${token.value}")
+    logger.debug(s"Received proxy request for user ${userInfo.userEmail}")
     authCheck flatMap { _ => getTargetHost(googleProject, clusterName) } flatMap {
       case ClusterReady(targetHost) =>
         // If this is a WebSocket request (e.g. wss://leo:8080/...) then akka-http injects a
