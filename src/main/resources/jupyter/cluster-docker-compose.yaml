@@ -26,7 +26,6 @@ jupyter:
     - /etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}:/etc/${JUPYTER_SERVICE_ACCOUNT_CREDENTIALS}
     - /etc/custom.js:/home/jupyter-user/.jupyter/custom/custom.js
     - /etc/google_sign_in.js:/home/jupyter-user/.jupyter/custom/google_sign_in.js
-    - /etc/jupyter_localize_extension.py:/home/jupyter-user/.jupyter/custom/jupyter_localize_extension.py
   restart: always
   environment:
     GOOGLE_PROJECT: "${GOOGLE_PROJECT}"
