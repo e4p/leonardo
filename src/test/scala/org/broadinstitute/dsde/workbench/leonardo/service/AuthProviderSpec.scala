@@ -161,6 +161,38 @@ class AuthProviderSpec extends FreeSpec with ScalatestRouteTest with Matchers wi
       verify(spyProvider, Mockito.never).notifyClusterDeleted(userEmail.value, project.value, name1.string)
     }
 
+    "should allow syncing data if the auth provider returns yes" in isolatedDbTest {
+      val syncOnlyProvider = new MockLeoAuthProvider(config.getConfig("auth.syncOnlyProviderConfig"))
+      val spyProvider = spy(syncOnlyProvider)
+      val leo = leoWithAuthProvider(spyProvider)
+      val proxy = proxyWithAuthProvider(spyProvider)
+
+      //poke a cluster into the database so we actually have something to look for
+      dbFutureValue { _.clusterQuery.save(c1, gcsPath("gs://bucket1"), None) }
+
+      // status should work for this user
+      val clusterStatus = leo.getActiveClusterDetails(userInfo, project, name1).futureValue
+      clusterStatus shouldBe c1
+
+      // list should work for this user
+      //list all clusters should be fine, but empty
+      val clusterList = leo.listClusters(userInfo, Map()).futureValue
+      clusterList shouldBe Seq(c1)
+
+      //connect should 401
+      val httpRequest = HttpRequest(POST, Uri(s"/notebooks/$googleProject/$clusterName/api/localise"))
+      val clusterAuthException = proxy.proxy(userInfo, GoogleProject(googleProject), ClusterName(clusterName), httpRequest, tokenCookie).failed.futureValue
+      clusterAuthException shouldBe a [AuthorizationError]
+
+      //destroy should 401 too
+      val clusterDestroyException = leo.deleteCluster(userInfo, project, name1).failed.futureValue
+      clusterDestroyException shouldBe a [AuthorizationError]
+
+      //verify we never notified the auth provider of clusters happening because they didn't
+      verify(spyProvider, Mockito.never).notifyClusterCreated(userEmail.value, project.value, name1.string)
+      verify(spyProvider, Mockito.never).notifyClusterDeleted(userEmail.value, project.value, name1.string)
+    }
+
     "should give you a 401 if you can see a cluster's details but can't do the more specific action" in isolatedDbTest {
       val readOnlyProvider = new MockLeoAuthProvider(config.getConfig("auth.readOnlyProviderConfig"))
       val spyProvider = spy(readOnlyProvider)
