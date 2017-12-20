@@ -112,10 +112,12 @@ class AuthProviderSpec extends FreeSpec with ScalatestRouteTest with Matchers wi
       listResponse shouldBe Seq(cluster1)
 
       //connect
-      val httpRequest = HttpRequest(GET, Uri(s"/notebooks/$googleProject/$clusterName"))
-      proxy.proxyNotebook(userInfo, GoogleProject(googleProject), ClusterName(clusterName), httpRequest, tokenCookie).futureValue
+      val proxyRequest = HttpRequest(GET, Uri(s"/notebooks/$googleProject/$clusterName"))
+      proxy.proxyNotebook(userInfo, GoogleProject(googleProject), ClusterName(clusterName), proxyRequest, tokenCookie).futureValue
 
-      //todo: sync
+      //sync
+      val syncRequest = HttpRequest(POST, Uri(s"/notebooks/$googleProject/$clusterName/api/localize"))
+      proxy.proxyLocalize(userInfo, GoogleProject(googleProject), ClusterName(clusterName), syncRequest, tokenCookie).futureValue
 
       //delete
       leo.deleteCluster(userInfo, project, name1).futureValue
@@ -152,41 +154,14 @@ class AuthProviderSpec extends FreeSpec with ScalatestRouteTest with Matchers wi
       val clusterNotFoundException = proxy.proxyNotebook(userInfo, GoogleProject(googleProject), ClusterName(clusterName), httpRequest, tokenCookie).failed.futureValue
       clusterNotFoundException shouldBe a [ClusterNotFoundException]
 
+      //sync
+      val syncRequest = HttpRequest(POST, Uri(s"/notebooks/$googleProject/$clusterName/api/localize"))
+      val syncNotFoundException = proxy.proxyLocalize(userInfo, GoogleProject(googleProject), ClusterName(clusterName), syncRequest, tokenCookie).failed.futureValue
+      syncNotFoundException shouldBe a [ClusterNotFoundException]
+
       //destroy cluster
       val clusterNotFoundAgain = leo.deleteCluster(userInfo, project, name1).failed.futureValue
       clusterNotFoundAgain shouldBe a [ClusterNotFoundException]
-
-      //verify we never notified the auth provider of clusters happening because they didn't
-      verify(spyProvider, Mockito.never).notifyClusterCreated(userEmail.value, project.value, name1.string)
-      verify(spyProvider, Mockito.never).notifyClusterDeleted(userEmail.value, project.value, name1.string)
-    }
-
-    "should allow syncing data if the auth provider returns yes" in isolatedDbTest {
-      val syncOnlyProvider = new MockLeoAuthProvider(config.getConfig("auth.syncOnlyProviderConfig"))
-      val spyProvider = spy(syncOnlyProvider)
-      val leo = leoWithAuthProvider(spyProvider)
-      val proxy = proxyWithAuthProvider(spyProvider)
-
-      //poke a cluster into the database so we actually have something to look for
-      dbFutureValue { _.clusterQuery.save(c1, gcsPath("gs://bucket1"), None) }
-
-      // status should work for this user
-      val clusterStatus = leo.getActiveClusterDetails(userInfo, project, name1).futureValue
-      clusterStatus shouldBe c1
-
-      // list should work for this user
-      //list all clusters should be fine, but empty
-      val clusterList = leo.listClusters(userInfo, Map()).futureValue
-      clusterList shouldBe Seq(c1)
-
-      //connect should 401
-      val httpRequest = HttpRequest(POST, Uri(s"/notebooks/$googleProject/$clusterName/api/localise"))
-      val clusterAuthException = proxy.proxyNotebook(userInfo, GoogleProject(googleProject), ClusterName(clusterName), httpRequest, tokenCookie).failed.futureValue
-      clusterAuthException shouldBe a [AuthorizationError]
-
-      //destroy should 401 too
-      val clusterDestroyException = leo.deleteCluster(userInfo, project, name1).failed.futureValue
-      clusterDestroyException shouldBe a [AuthorizationError]
 
       //verify we never notified the auth provider of clusters happening because they didn't
       verify(spyProvider, Mockito.never).notifyClusterCreated(userEmail.value, project.value, name1.string)
@@ -215,6 +190,11 @@ class AuthProviderSpec extends FreeSpec with ScalatestRouteTest with Matchers wi
       val httpRequest = HttpRequest(GET, Uri(s"/notebooks/$googleProject/$clusterName"))
       val clusterAuthException = proxy.proxyNotebook(userInfo, GoogleProject(googleProject), ClusterName(clusterName), httpRequest, tokenCookie).failed.futureValue
       clusterAuthException shouldBe a [AuthorizationError]
+
+      //sync
+      val syncRequest = HttpRequest(POST, Uri(s"/notebooks/$googleProject/$clusterName/api/localize"))
+      val syncNotFoundException = proxy.proxyLocalize(userInfo, GoogleProject(googleProject), ClusterName(clusterName), syncRequest, tokenCookie).failed.futureValue
+      syncNotFoundException shouldBe a [AuthorizationError]
 
       //destroy should 401 too
       val clusterDestroyException = leo.deleteCluster(userInfo, project, name1).failed.futureValue

@@ -71,8 +71,7 @@ class LeonardoServiceSpec extends TestKit(ActorSystem("leonardotest")) with Flat
     clusterResourcesConfig.jupyterInstallExtensionScript.string,
     clusterResourcesConfig.jupyterCustomJs.string,
     clusterResourcesConfig.jupyterGoogleSignInJs.string,
-    ClusterInitValues.serviceAccountCredentialsFilename,
-    clusterResourcesConfig.jupyterServerExtension.string
+    ClusterInitValues.serviceAccountCredentialsFilename
   ) map GcsRelativePath
 
 

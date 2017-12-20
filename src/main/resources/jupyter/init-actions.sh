@@ -43,7 +43,6 @@ if [[ "${ROLE}" == 'Master' ]]; then
     JUPYTER_EXTENSION_URI=$(jupyterExtensionUri)
     JUPYTER_CUSTOM_JS_URI=$(jupyterCustomJsUri)
     JUPYTER_GOOGLE_SIGN_IN_JS_URI=$(jupyterGoogleSignInJsUri)
-    JUPYTER_JUPYTER_SERVER_EXTENSION=$(jupyterServerExtension)
 
 
     apt-get update
@@ -70,7 +69,6 @@ if [[ "${ROLE}" == 'Master' ]]; then
 
     gsutil cp ${JUPYTER_CUSTOM_JS_URI} /etc
     gsutil cp ${JUPYTER_GOOGLE_SIGN_IN_JS_URI} /etc
-    gsutil cp ${JUPYTER_JUPYTER_SERVER_EXTENSION} /etc
 
     # Make sure the install-jupyter-extension.sh script is executable
     chmod +x /etc/install-jupyter-extension.sh

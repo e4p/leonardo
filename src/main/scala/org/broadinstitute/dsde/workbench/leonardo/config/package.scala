@@ -44,8 +44,7 @@ package object config {
       ClusterResource(config.getString("jupyterInstallExtensionScript")),
       ClusterResource(config.getString("proxySiteConf")),
       ClusterResource(config.getString("jupyterCustomJs")),
-      ClusterResource(config.getString("jupyterGoogleSignInJs")),
-      ClusterResource(config.getString("jupyterServerExtension"))
+      ClusterResource(config.getString("jupyterGoogleSignInJs"))
     )
   }
 

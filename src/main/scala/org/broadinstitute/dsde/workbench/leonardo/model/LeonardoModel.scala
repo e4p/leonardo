@@ -248,8 +248,7 @@ object ClusterInitValues {
       serviceAccountKey.map(_ => GcsPath(bucketName, GcsRelativePath(serviceAccountCredentialsFilename)).toUri).getOrElse(""),
       GcsPath(bucketName, GcsRelativePath(clusterResourcesConfig.jupyterCustomJs.string)).toUri,
       GcsPath(bucketName, GcsRelativePath(clusterResourcesConfig.jupyterGoogleSignInJs.string)).toUri,
-      swaggerConfig.googleClientId,
-      GcsPath(bucketName, GcsRelativePath("Jupyter_Server_Extension.py")).toUri
+      swaggerConfig.googleClientId
     )
 }
 
@@ -271,8 +270,7 @@ case class ClusterInitValues(googleProject: String,
                              jupyterServiceAccountCredentials: String,
                              jupyterCustomJsUri: String,
                              jupyterGoogleSignInJsUri: String,
-                             googleClientId: String,
-                             jupyterServerExtension: String)
+                             googleClientId: String)
 
 
 object FirewallRuleRequest {
@@ -371,6 +369,6 @@ object LeonardoJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val serviceAccountInfoFormat = jsonFormat2(ServiceAccountInfo.apply)
   implicit val clusterFormat = jsonFormat15(Cluster.apply)
   implicit val clusterRequestFormat = jsonFormat4(ClusterRequest)
-  implicit val clusterInitValuesFormat = jsonFormat18(ClusterInitValues.apply)
+  implicit val clusterInitValuesFormat = jsonFormat17(ClusterInitValues.apply)
   implicit val defaultLabelsFormat = jsonFormat6(DefaultLabels.apply)
 }
