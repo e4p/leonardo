@@ -5,7 +5,6 @@ import subprocess
 import os
 import errno
 import stat
-import Jupyter_Server_Extension
 
 c = get_config()
 c.NotebookApp.ip = '*'
