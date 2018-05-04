@@ -1,12 +1,10 @@
 # Dockerfile for user-extension of the base docker image.
 # This adds an easy-to-modify place for language extensions
 # that is independent of the construction of the base image
-# and Leonardo specific configuration defined therein.
+# and Leonardo-specific configuration defined therein.
 #
-# To use this, just modify as needed and run build.sh
-# since this file defines the final published image.
-# to build manually, make sure to run docker build with
-#   --build-arg BASE_IMAGE="my-base-image-and:tag"
+# To build manually, make sure to run docker build with
+#   `--build-arg BASE_IMAGE="my-base-image-and:tag"`
 
 ARG BASE_IMAGE
 
@@ -27,10 +25,88 @@ USER $USER
 # Python and R extensions
 ##########################
 
+#!# RUN pip2 install --user \
+#!#         google-cloud \
+#!#     && pip3 install --user \
+#!#         google-cloud \
+#!#     && R -e 'install.packages(c( \
+#!#         "nloptr", \
+#!#         "nlme"), \
+#!#         repos="https://cran.mtu.edu")'
+
+######################################
+# Requests from Mike Dezube (python)
+######################################
+# Already in base image
+#  - pandas, numpy, seaborn
+
 RUN pip2 install --user \
-        pandas-gbq \
+       google-cloud \
+       vega3 \
+       altair \
     && pip3 install --user \
-        pandas-gbq \
-    && R -e 'install.packages(c( \
-        "nloptr"), \
+       google-cloud \
+       vega3 \
+       altair
+
+
+######################################
+# Requests by Katherine Evans (R)
+######################################
+
+# Already in base image
+#   bigrquery, tidyr, dplyr, reshape2, ggplot2
+
+RUN R -e 'install.packages(c( \
+        "bigrquery", \
+        "caret",  \
+        "tidyr",  \
+        "nlme",  \
+        "dplyr",  \
+        "dbplyr",  \
+        "reshape2",  \
+        "lubridate",  \
+        "zoo",  \
+        "MASS",  \
+        "psych",  \
+        "lme4",  \
+        "data.table",  \
+        "ggplot2"),  \
         repos="https://cran.mtu.edu")'
+
+
+######################################
+# Requests by Meghan Dierks (R)
+######################################
+# Duplicate libraries from base image:
+#   dplyr, reshape2,tidyr, ggplot2
+
+    # Generally helpful R libraries for data prep / statistical analysis.
+RUN R -e 'install.packages(c( \
+        "corrplot",  \
+        "data.table",  \
+        "dbplyr",  \
+        "dplyr",  \
+        "likelihood",  \
+        "lme4",  \
+        "lubridate",  \
+        "MASS",  \
+        "nlme",  \
+        "psych",  \
+        "reshape2",  \
+        "tidyr",  \
+        "tidyverse",  \
+        "zoo"),  \
+        repos="https://cran.mtu.edu")'  \
+    # Machine learning and visualization libraries.
+    && R -e 'install.packages(c( \
+        "e1071", \
+        "ggmap", \
+        "ggnet2", \
+        "ggplot2", \
+        "ggthemes", \
+        "igraph", \
+        "maptools", \
+        "rgeos", \
+        "scales"), \
+    repos="https://cran.mtu.edu")'
