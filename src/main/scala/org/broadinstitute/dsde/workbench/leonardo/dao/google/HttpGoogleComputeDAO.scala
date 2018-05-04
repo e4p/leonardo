@@ -163,11 +163,9 @@ class HttpGoogleComputeDAO(appName: String,
     */
   private def getInstanceIP(instance: GoogleInstance): Option[IP] = {
     for {
-      interfaces <- Option(instance.getNetworkInterfaces)
-      interface <- interfaces.asScala.headOption
-      accessConfigs <- Option(interface.getAccessConfigs)
-      accessConfig <- accessConfigs.asScala.headOption
-    } yield IP(accessConfig.getNatIP)
+       interfaces <- Option(instance.getNetworkInterfaces)
+       interface <- interfaces.asScala.headOption
+    } yield IP(interface.getNetworkIP)
   }
 
   private implicit class GoogleExceptionSupport[A](future: Future[A]) {
