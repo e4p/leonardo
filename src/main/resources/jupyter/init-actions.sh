@@ -214,6 +214,15 @@ if [[ "${ROLE}" == 'Master' ]]; then
       docker cp /etc/${JUPYTER_GOOGLE_SIGN_IN_JS} ${JUPYTER_SERVER_NAME}:${JUPYTER_USER_HOME}/.jupyter/custom/
     fi
 
+    if [ "${JUPYTER_USER_SCRIPT_URI}" != "gs://leonardo-deploy-artifacts/prod/notebook-setup.py" ]; then
+      log 'Running Verily setup script.'
+      V_SCRIPT_NAME="verily-notebook-setup.py"
+      gsutil cp gs://leonardo-deploy-artifacts/prod/notebook-setup.py /etc/${V_SCRIPT_NAME}
+      docker cp /etc/${V_SCRIPT_NAME} ${JUPYTER_SERVER_NAME}:${JUPYTER_HOME}/${V_SCRIPT_NAME}
+      docker exec -u root ${JUPYTER_SERVER_NAME} chmod +x ${JUPYTER_HOME}/${V_SCRIPT_NAME}
+      docker exec -u root -e PIP_USER=false ${JUPYTER_SERVER_NAME} ${JUPYTER_HOME}/${V_SCRIPT_NAME}
+    fi
+
     # If a Jupyter user script was specified, copy it into the jupyter docker container.
     if [ ! -z ${JUPYTER_USER_SCRIPT_URI} ] ; then
       log 'Installing Jupyter user extension [$JUPYTER_USER_SCRIPT_URI]...'
@@ -228,8 +237,45 @@ if [[ "${ROLE}" == 'Master' ]]; then
     log 'Starting Jupyter Notebook...'
     docker exec -d ${JUPYTER_SERVER_NAME} ${JUPYTER_SCRIPTS}/run-jupyter.sh
     log 'All done!'
+
+
+##################################################################################
+## In this case, the runner is a worker node and must match local dependencies. ##
+##################################################################################
+else
+    update_apt_get
+    apt-get install -y -q \
+      apt-transport-https \
+      ca-certificates \
+      curl \
+      gnupg2 \
+      software-properties-common
+
+    log 'Install and update Python and compiled Python dependencies.'
+
+    apt-get install -yq --no-install-recommends \
+        liblzo2-dev \
+        libz-dev \
+        python \
+        python-dev \
+        python-matplotlib \
+        python-pandas \
+        python-seaborn \
+        python-tk \
+        python-numpy \
+        python3 \
+        python3-dev \
+        python3-matplotlib \
+        python3-pandas \
+        python3-tk \
+        python3-numpy \
+        wget
+
+    # Install biopython
+    wget -nv https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py
+    python3 /tmp/get-pip.py
+    python2 /tmp/get-pip.py
+    pip3 install --ignore-installed biopython
+    pip2 install --ignore-installed biopython
+
 fi
-
-
-
-
